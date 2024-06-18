@@ -2,5 +2,5 @@
 
 ![screenshopt](https://github.com/lostjared/Acid.Cam.Filter.JavaScript/blob/main/ss.jpg "screneshot")
 
-A few filters written in JavaScript available in the browser
+A few filters written in JavaScript available in the browser easily extendable more of a "proof of concept".
 
