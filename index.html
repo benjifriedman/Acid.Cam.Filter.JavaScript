@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acid Cam Image Filter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #controls {
+            margin: 20px;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Acid Cam Image Filter</h1>
+    <div id="controls">
+        <button id="loadImage">Load Image</button>
+        <button id="saveImage">Save Image</button>
+        <label for="filterSelect">Filter:</label>
+        <select id="filterSelect">
+            <option value="selfAlphaBlend">Self Alpha Blend</option>
+            <option value="diamondPattern">Diamond Pattern</option>
+            <option value="colorXor">ColorXor</option>
+            <option value="block">Block</option>
+            <option value="reverseXOR">Reverse XOR</option>
+            <option value="side2Side">Side to Side</option>
+            <option value="top2Bottom">Top to Bottom</option>
+            <option value="blendAngle">Blend Angle</option>
+            <option value="outward">Outward</option>
+            <option value="outwardSquare">Outward Square</option>
+        </select>
+        <label for="iterationSlider">Iterations:</label>
+        <input type="range" id="iterationSlider" min="1" max="100" value="1">
+    </div>
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <input type="file" id="fileInput" style="display:none">
+
+    <script src="script.js"></script>
+</body>
+</html>
