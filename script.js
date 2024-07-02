@@ -22,6 +22,15 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
     reader.readAsDataURL(file);
 });
 
+document.getElementById("setImage").addEventListener('click', function() {
+    if(originalImageData != null) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        newData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        originalImageData = newData;
+    }
+});
+
 document.getElementById('saveImage').addEventListener('click', function() {
     const canvas = document.getElementById('canvas');
     const link = document.createElement('a');
