@@ -59,14 +59,12 @@ function applyFilter() {
 
     let iterations = parseInt(document.getElementById('iterationSlider').value);
     const filter = document.getElementById('filterSelect').value;
-
+    iterations = iterations * 0.1;
     if (filter === 'selfAlphaBlend') {
         selfAlphaBlend(data, iterations);
     } else if (filter === 'diamondPattern') {
-        iterations = iterations * 0.05 + 1.0;
         diamondPattern(data, canvas.width, canvas.height, iterations);
     } else if (filter === "colorXor") {
-        iterations = iterations * 0.01 + 1.0;
         colorXor(data, canvas.width, canvas.height, iterations);
     } else if (filter === "block") {
         block(data, canvas.width, canvas.height, iterations);
@@ -89,19 +87,77 @@ function applyFilter() {
     } else if (filter === "pixelSort") {
         pixelSort(data, canvas.width, canvas.height, iterations);
     } else if (filter === "blend3") {
-        blend3(data, canvas.width, canvas.height, iterations*0.1);
+        blend3(data, canvas.width, canvas.height, iterations * 0.1);
     } else if (filter === "negParadox") {
-        negParadox(data, canvas.width, canvas.height, iterations*0.1);
+        negParadox(data, canvas.width, canvas.height, iterations * 0.1);
     } else if (filter === "thoughtMode") {
-        thoughtMode(data, canvas.width, canvas.height, iterations*0.1);
+        thoughtMode(data, canvas.width, canvas.height, iterations * 0.1);
     } else if (filter === "blank") {
-        blank(data, canvas.width, canvas.height, iterations*0.1);
+        blank(data, canvas.width, canvas.height, iterations * 0.1);
     } else if (filter === "tri") {
-        tri(data, canvas.width, canvas.height, iterations*0.1);
+        tri(data, canvas.width, canvas.height, iterations * 0.1);
     } else if (filter === "distort") {
-        distort(data, canvas.width, canvas.height, iterations*0.1);
+        distort(data, canvas.width, canvas.height, iterations * 0.1);
     } else if (filter === "cDraw") {
-        cDraw(data, canvas.width, canvas.height, iterations*0.1);
+        cDraw(data, canvas.width, canvas.height, iterations * 0.1);
+    } else if (filter === "oppositeBlend") {
+        oppositeBlend(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "diagonalLines") {
+        diagonalLines(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "horizontalLines") {
+        horizontalLines(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "invertedScanlines") {
+        invertedScanlines(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "softMirror") {
+        softMirror(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "kanapaTrip") {
+       kanapaTrip(data, canvas.width, canvas.height, iterations); 
+    } else if (filter === "scanSwitch") {
+        scanSwitch(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "scanAlphaSwitch") {
+        scanAlphaSwitch(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "negativeStrobe") {
+        negativeStrobe(data, canvas.width, canvas.height, iterations);
+     } else if (filter === "xorAddMul") {
+        xorAddMul(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "blendSwitch") {
+        blendSwitch(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "allRed") {
+        allRed(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "allGreen") {
+        allGreen(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "allBlue") {
+        allBlue(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "lineRGB") {
+        lineRGB(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "pixelRGB") {
+        pixelRGB(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "boxedRGB") {
+        boxedRGB(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "kruegerSweater") {
+        kruegerSweater(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "rgbFlash") {
+        rgbFlash(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "increaseBlendHorizontal") {
+        increaseBlendHorizontal(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "blendIncrease") {
+        blendIncrease(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "gradientReverse") {
+        gradientReverse(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "gradientReverseBox") {
+        gradientReverseBox(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "gradientReverseVertical") {
+        gradientReverseVertical(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "gradientNewFilter") {
+        gradientNewFilter(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "reinterpretDouble") {
+        reinterpretDouble(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "reinterpSelfScale") {
+        reinterpSelfScale(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "averageLines") {
+        averageLines(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "colorRange") {
+        colorRange(data, canvas.width, canvas.height, iterations);
     }
     ctx.putImageData(imageData, 0, 0);
 }
@@ -204,6 +260,9 @@ function colorXor(data, width, height, iterations) {
 let direction = 1;
 
 function block(data, w, h, square) {
+    square = Math.floor(square);
+    if(square < 1) square = 1.0;
+
     for (let z = 0; z < h; z += square) {
         for (let i = 0; i < w; i += square) {
             let pixel = getpixel(data, i, z, w);
@@ -620,4 +679,654 @@ function cDraw(data, width, height, iterations) {
     rad += 0.1;
     if (rad > 90) rad = 0;
     if (alpha > 20) alpha = 0;
+}
+
+// new ones
+
+let isNegative = false;
+
+function oppositeBlend(data, width, height, iterations) {
+    const temp = new Uint8ClampedArray(data);
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width - 1; ++i) {
+            let index = (z * width + i) * 4;
+            let tempIndex = (z * width + (width - i - 1)) * 4;
+            for (let j = 0; j < 3; ++j) {
+                data[index + j] = (data[index + j] + temp[tempIndex + j] * iterations) % 255;
+            }
+            swapColors(data, index);
+            if (isNegative) invert(data, index);
+        }
+    }
+}
+
+function diagonalLines(data, width, height, iterations) {
+    const temp = new Uint8ClampedArray(data);
+    let pos = 1.0;
+    for (let i = 0; i < width - 1; ++i) {
+        for (let z = 0; z < height - 1; ++z) {
+            let index = (z * width + i) * 4;
+            let tempIndex = ((height - z - 1) * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                data[index + j] = (data[index + j] + temp[tempIndex + j] + pos * iterations) % 255;
+                ++pos;
+                if (pos > 100) pos = 0;
+            }
+            swapColors(data, index);
+            if (isNegative) invert(data, index);
+        }
+    }
+}
+
+function horizontalLines(data, width, height, iterations) {
+    let pos = [1.0, 16.0, 32.0];
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let index = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                data[index + j] = (data[index + j] + pos[j] * iterations) % 255;
+                pos[j] += 0.1;
+                if (pos[j] > 100) pos[j] = 0;
+            }
+            swapColors(data, index);
+            if (isNegative) invert(data, index);
+        }
+    }
+}
+
+function invertedScanlines(data, width, height, iterations) {
+    let index = 0;
+    let alpha = 1.0;
+    const posMax = 14.0;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (index) {
+                case 0:
+                    for (let j = 0; j < 3; ++j) {
+                        data[dataIndex + j] = (~data[dataIndex + j] * alpha * iterations) % 255;
+                    }
+                    index++;
+                    break;
+                case 1:
+                    let temp = data.slice(dataIndex, dataIndex + 3);
+                    data[dataIndex] = (temp[2] * alpha * iterations) % 255;
+                    data[dataIndex + 1] = (temp[1] * alpha * iterations) % 255;
+                    data[dataIndex + 2] = (temp[0] * alpha * iterations) % 255;
+                    index++;
+                    break;
+                case 2:
+                    index = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    procPos(alpha, posMax);
+}
+
+function softMirror(data, width, height, iterations) {
+    let index = 0;
+    const temp = new Uint8ClampedArray(data);
+    for (let z = 1; z < height - 1; ++z) {
+        for (let i = 1; i < width - 1; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (index) {
+                case 0:
+                    index++;
+                    break;
+                case 1:
+                    let tempIndex = ((height - z - 1) * width + (width - i - 1)) * 4;
+                    for (let j = 0; j < 3; ++j) {
+                        data[dataIndex + j] = (temp[tempIndex + j] * iterations) % 255;
+                    }
+                    index = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+}
+
+function kanapaTrip(data, width, height, iterations) {
+    let start_index = 0;
+    let index = start_index;
+    const temp = new Uint8ClampedArray(data);
+    for (let z = 1; z < height - 1; ++z) {
+        for (let i = 1; i < width - 1; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (index) {
+                case 0:
+                    index++;
+                    break;
+                case 1:
+                    let tempIndex = ((height - z - 1) * width + (width - i - 1)) * 4;
+                    for (let j = 0; j < 3; ++j) {
+                        data[dataIndex + j] = (temp[tempIndex + j] * iterations) % 255;
+                    }
+                    index = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    if (start_index == 0) start_index = 1;
+    else start_index = 0;
+}
+
+function scanSwitch(data, width, height, iterations) {
+    let start_index = 0;
+    let index = start_index;
+    for (let z = 3; z < height - 3; ++z) {
+        for (let i = 3; i < width - 3; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (index) {
+                case 0:
+                    index++;
+                    break;
+                case 1:
+                    for (let j = 0; j < 3; ++j) {
+                        data[dataIndex + j] = (~data[dataIndex + j] * iterations) % 255;
+                    }
+                    index = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    if (start_index == 0) start_index = 1;
+    else start_index = 0;
+}
+
+function procPos(pos, pos_max) {
+
+}
+
+function scanAlphaSwitch(data, width, height, iterations) {
+    let start_index = 0;
+    let alpha = 1.0, alpha_max = 10.0;
+    let index = start_index;
+    for (let z = 3; z < height - 3; ++z) {
+        for (let i = 3; i < width - 3; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (index) {
+                case 0:
+                    index++;
+                    for (let j = 0; j < 3; ++j) {
+                        data[dataIndex + j] = (~data[dataIndex + j] * iterations) % 255;
+                    }
+                    break;
+                case 1:
+                    for (let j = 0; j < 3; ++j) {
+                        data[dataIndex + j] = (data[dataIndex + j] + data[dataIndex + j] * alpha * iterations) % 255;
+                    }
+                    index = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    if (start_index == 0) start_index = 1;
+    else start_index = 0;
+    procPos(alpha, alpha_max);
+}
+
+function negativeStrobe(data, width, height, iterations) {
+    let flash = 1;
+    if (flash == 1) {
+        for (let z = 0; z < height; ++z) {
+            for (let i = 0; i < width; ++i) {
+                let dataIndex = (z * width + i) * 4;
+                for (let j = 0; j < 3; ++j) {
+                    data[dataIndex + j] = (~data[dataIndex + j] * iterations) % 255;
+                }
+            }
+        }
+    }
+    if (flash == 1) {
+        flash = 0;
+    } else {
+        flash = 1;
+    }
+}
+
+function xorAddMul(data, width, height, iterations) {
+    let blend = 1.0, blend_max = 13.0;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            let b = Math.floor(blend);
+            data[dataIndex] = (data[dataIndex] ^ (b * iterations)) % 255;
+            data[dataIndex + 1] = (data[dataIndex + 1] + (b * iterations)) % 255;
+            data[dataIndex + 2] = (data[dataIndex + 2] * (b * iterations)) % 255;
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    procPos(blend, blend_max);
+}
+
+function blendSwitch(data, width, height, iterations) {
+    let pos = 0;
+    let blend_pixel = 0;
+    for (let i = 0; i < width; ++i) {
+        for (let z = 0; z < height; ++z) {
+            let dataIndex = (z * width + i) * 4;
+            data[dataIndex + pos] = (data[dataIndex + pos] * (blend_pixel++ * iterations)) % 255;
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        pos++;
+        if (pos > 2) pos = 0;
+    }
+}
+
+function allRed(data, width, height, iterations) {
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            data[dataIndex + 1] = data[dataIndex + 2] = 0;
+        }
+    }
+}
+
+function allGreen(data, width, height, iterations) {
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            data[dataIndex] = data[dataIndex + 2] = 0;
+        }
+    }
+}
+
+function allBlue(data, width, height, iterations) {
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            data[dataIndex] = data[dataIndex + 1] = 0;
+        }
+    }
+}
+
+function lineRGB(data, width, height, iterations) {
+    let counter = 0;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (counter) {
+                case 0:
+                    data[dataIndex + 1] = data[dataIndex + 2] = 0;
+                    break;
+                case 1:
+                    data[dataIndex] = data[dataIndex + 2] = 0;
+                    break;
+                case 2:
+                    data[dataIndex + 1] = data[dataIndex] = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        ++counter;
+        if (counter > 2) counter = 0;
+    }
+}
+
+function pixelRGB(data, width, height, iterations) {
+    let counter = 0;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (counter) {
+                case 0:
+                    data[dataIndex + 1] = data[dataIndex + 2] = 0;
+                    break;
+                case 1:
+                    data[dataIndex] = data[dataIndex + 2] = 0;
+                    break;
+                case 2:
+                    data[dataIndex + 1] = data[dataIndex] = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+            ++counter;
+            if (counter > 2) counter = 0;
+        }
+    }
+}
+
+function boxedRGB(data, width, height, iterations) {
+    let row_counter = 0;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (row_counter) {
+                case 0:
+                    data[dataIndex + 1] = data[dataIndex + 2] = 0;
+                    break;
+                case 1:
+                    data[dataIndex] = data[dataIndex + 2] = 0;
+                    break;
+                case 2:
+                    data[dataIndex + 1] = data[dataIndex] = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        if ((z % 32) == 0) {
+            ++row_counter;
+            if (row_counter > 3) row_counter = 0;
+        }
+    }
+}
+
+function kruegerSweater(data, width, height, iterations) {
+    let row_counter = 0;
+    let rg = 0;
+    row_counter = rg;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (row_counter) {
+                case 0:
+                    data[dataIndex + 1] = data[dataIndex + 2] = 0;
+                    break;
+                case 1:
+                    data[dataIndex] = data[dataIndex + 2] = 0;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        if ((z % 32) == 0) {
+            ++row_counter;
+            if (row_counter >= 2) {
+                row_counter = 0;
+            }
+        }
+    }
+    rg = (rg == 0) ? 1 : 0;
+}
+
+function rgbFlash(data, width, height, iterations) {
+    let counter = 0;
+    let start = 0;
+    for (let z = start; z < height; z += 2) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            switch (counter) {
+                case 0:
+                    data[dataIndex + 2] = 255;
+                    break;
+                case 1:
+                    data[dataIndex + 1] = 255;
+                    break;
+                case 2:
+                    data[dataIndex] = 255;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    ++counter;
+    if (counter > 2) counter = 0;
+    start = (start == 0) ? 1 : 0;
+}
+
+function increaseBlendHorizontal(data, width, height, iterations) {
+    let orig_frame = new Uint8ClampedArray(data);
+    for (let i = 0; i < width; ++i) {
+        let pix = [0, 0, 0];
+        for (let z = 0; z < height; ++z) {
+            let dataIndex = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                pix[j] += data[dataIndex + j] / (j + 2);
+                data[dataIndex + j] += (data[dataIndex + j] * (pix[j] / 32) * iterations) % 255;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+}
+
+function blendIncrease(data, width, height, iterations) {
+    let blend_r = Math.floor(Math.random() * 255);
+    let blend_g = Math.floor(Math.random() * 255);
+    let blend_b = Math.floor(Math.random() * 255);
+    let cblend_r = true, cblend_g = true, cblend_b = true;
+    let increase_value_r = 2, increase_value_g = 2, increase_value_b = 2;
+    if (blend_r > 255) {
+        blend_r = Math.floor(Math.random() * 255);
+        if (cblend_r == true) {
+            blend_r = -blend_r;
+            cblend_r = false;
+        } else {
+            cblend_r = true;
+        }
+    }
+    if (blend_g > 255) {
+        blend_g = Math.floor(Math.random() * 255);
+        if (cblend_g == true) {
+            blend_g = -blend_g;
+            cblend_g = false;
+        } else {
+            cblend_g = true;
+        }
+    }
+    if (blend_b > 255) {
+        blend_b = Math.floor(Math.random() * 255);
+        if (cblend_b == true) {
+            blend_b = -blend_b;
+            cblend_b = false;
+        } else {
+            cblend_b = true;
+        }
+    }
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            data[dataIndex + 2] = (data[dataIndex + 2] + blend_r * iterations) % 255;
+            data[dataIndex + 1] = (data[dataIndex + 1] + blend_g * iterations) % 255;
+            data[dataIndex] = (data[dataIndex] + blend_b * iterations) % 255;
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    blend_r += increase_value_r;
+    blend_g += increase_value_g;
+    blend_b += increase_value_b;
+    increase_value_r += Math.floor(Math.random() * 5);
+    increase_value_g += Math.floor(Math.random() * 5);
+    increase_value_b += Math.floor(Math.random() * 5);
+    if (increase_value_r > 20) {
+        increase_value_r = 2;
+    }
+    if (increase_value_g > 20) {
+        increase_value_g = 2;
+    }
+    if (increase_value_b > 20) {
+        increase_value_b = 2;
+    }
+}
+
+function gradientReverse(data, width, height, iterations) {
+    let direction = true;
+    let alpha = 1.0, alpha_max = 8;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                if (direction == true)
+                    data[dataIndex + j] = (data[dataIndex + j] + i * alpha * iterations) % 255;
+                else
+                    data[dataIndex + j] = (data[dataIndex + j] - i * alpha * iterations) % 255;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        direction = (direction == true) ? false : true;
+    }
+    procPos(alpha, alpha_max);
+}
+
+function gradientReverseBox(data, width, height, iterations) {
+    let direction = true;
+    let alpha = 1.0, alpha_max = 8;
+    for (let i = 0; i < width; ++i) {
+        for (let z = 0; z < height; ++z) {
+            let dataIndex = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                if (direction == true)
+                    data[dataIndex + j] = (data[dataIndex + j] + i * alpha * iterations) % 255;
+                else
+                    data[dataIndex + j] = (data[dataIndex + j] - z * alpha * iterations) % 255;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        direction = (direction == true) ? false : true;
+    }
+    procPos(alpha, alpha_max);
+}
+
+function gradientReverseVertical(data, width, height, iterations) {
+    let direction = true;
+    let alpha = 1.0, alpha_max = 8;
+    for (let i = 0; i < width; ++i) {
+        for (let z = 0; z < height; ++z) {
+            let dataIndex = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                if (direction == true)
+                    data[dataIndex + j] = (data[dataIndex + j] + z * alpha * iterations) % 255;
+                else
+                    data[dataIndex + j] = (data[dataIndex + j] - z * alpha * iterations) % 255;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        direction = (direction == true) ? false : true;
+    }
+    procPos(alpha, alpha_max);
+}
+
+function gradientNewFilter(data, width, height, iterations) {
+    let index = 0;
+    let alpha = 1.0, alpha_max = 9;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                switch (index) {
+                    case 0:
+                        data[dataIndex + j] = (data[dataIndex + j] ^ Math.floor(alpha * z * iterations)) % 255;
+                        break;
+                    case 1:
+                        data[dataIndex + j] = (data[dataIndex + j] & Math.floor(alpha * i * iterations)) % 255;
+                        break;
+                    case 2:
+                        data[dataIndex + j] = (data[dataIndex + j] ^ Math.floor(alpha * iterations)) % 255;
+                        break;
+                }
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+            ++index;
+            if (index > 2) index = 0;
+        }
+    }
+    procPos(alpha, alpha_max);
+}
+
+function reinterpretDouble(data, width, height, iterations) {
+    let alpha = 1.0, alpha_max = 8;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            let value = new Uint8Array(new Float64Array([alpha * iterations]).buffer);
+            for (let j = 0; j < 3; ++j)
+                data[dataIndex + j] = (data[dataIndex + j] ^ value[j]) % 255;
+
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    procPos(alpha, alpha_max);
+}
+
+function reinterpSelfScale(data, width, height, iterations) {
+    let index = 0;
+    let alpha = 1.0, alpha_max = 8;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            let value = new Uint8Array(new Float64Array([alpha * iterations]).buffer);
+            switch (index) {
+                case 0:
+                    data[dataIndex] = (data[dataIndex] * alpha ^ value[0]) % 255;
+                    data[dataIndex + 1] = (data[dataIndex + 1] * alpha) % 255;
+                    data[dataIndex + 2] = (data[dataIndex + 2] * alpha) % 255;
+                    break;
+                case 1:
+                    data[dataIndex] = (data[dataIndex] * alpha) % 255;
+                    data[dataIndex + 1] = (data[dataIndex + 1] * alpha ^ value[1]) % 255;
+                    data[dataIndex + 2] = (data[dataIndex + 2] * alpha) % 255;
+                    break;
+                case 2:
+                    data[dataIndex] = (data[dataIndex] * alpha) % 255;
+                    data[dataIndex + 1] = (data[dataIndex + 1] * alpha) % 255;
+                    data[dataIndex + 2] = (data[dataIndex + 2] * alpha ^ value[2]) % 255;
+                    break;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        ++index;
+        if (index > 2) index = 0;
+    }
+    procPos(alpha, alpha_max);
+}
+
+function averageLines(data, width, height, iterations) {
+    let average = [0, 0, 0];
+    let alpha = 1.0, alpha_max = 11;
+    for (let z = 0; z < height; ++z) {
+        let s = [1, 1, 1];
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                s[j] += data[dataIndex + j];
+                data[dataIndex + j] = ((data[dataIndex + j] ^ average[j]) * alpha * iterations) % 255;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+        for (let j = 0; j < 3; ++j) {
+            average[j] = Math.floor(s[j] / width);
+        }
+    }
+    procPos(alpha, alpha_max);
+}
+
+function colorRange(data, width, height, iterations) {
+    let alpha = 1.0, alpha_max = 6;
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let dataIndex = (z * width + i) * 4;
+            let value = new Uint8Array(new Float64Array([alpha * iterations]).buffer);
+            for (let j = 0; j < 3; ++j) {
+                data[dataIndex + j] = (data[dataIndex + j] * value[j]) % 255;
+            }
+            swapColors(data, dataIndex);
+            if (isNegative) invert(data, dataIndex);
+        }
+    }
+    procPos(alpha, alpha_max);
 }
