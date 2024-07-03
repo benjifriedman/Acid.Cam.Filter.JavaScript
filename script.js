@@ -69,7 +69,7 @@ function applyFilter() {
         iterations = iterations * 0.01 + 1.0;
         colorXor(data, canvas.width, canvas.height, iterations);
     } else if (filter === "block") {
-        Block(data, canvas.width, canvas.height, iterations);
+        block(data, canvas.width, canvas.height, iterations);
     } else if (filter === "reverseXOR") {
         reverseXOR(data, canvas.width, canvas.height, iterations);
     } else if (filter === "combinePixels") {
@@ -84,6 +84,24 @@ function applyFilter() {
         outward(data, canvas.width, canvas.height, iterations);
     } else if (filter === "outwardSquare") {
         outwardSquare(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "glitchSort") {
+        glitchSort(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "pixelSort") {
+        pixelSort(data, canvas.width, canvas.height, iterations);
+    } else if (filter === "blend3") {
+        blend3(data, canvas.width, canvas.height, iterations*0.1);
+    } else if (filter === "negParadox") {
+        negParadox(data, canvas.width, canvas.height, iterations*0.1);
+    } else if (filter === "thoughtMode") {
+        thoughtMode(data, canvas.width, canvas.height, iterations*0.1);
+    } else if (filter === "blank") {
+        blank(data, canvas.width, canvas.height, iterations*0.1);
+    } else if (filter === "tri") {
+        tri(data, canvas.width, canvas.height, iterations*0.1);
+    } else if (filter === "distort") {
+        distort(data, canvas.width, canvas.height, iterations*0.1);
+    } else if (filter === "cDraw") {
+        cDraw(data, canvas.width, canvas.height, iterations*0.1);
     }
     ctx.putImageData(imageData, 0, 0);
 }
@@ -185,7 +203,7 @@ function colorXor(data, width, height, iterations) {
 
 let direction = 1;
 
-function Block(data, w, h, square) {
+function block(data, w, h, square) {
     for (let z = 0; z < h; z += square) {
         for (let i = 0; i < w; i += square) {
             let pixel = getpixel(data, i, z, w);
@@ -240,9 +258,9 @@ function combinePixels(data, width, height, pos) {
         for (let i = 2; i < width - 2; ++i) {
             let index = (z * width + i) * 4;
             let pixels = [
-                getPixel(data, i + 1, z, width),
-                getPixel(data, i, z + 1, width),
-                getPixel(data, i + 1, z + 1, width)
+                getpixel(data, i + 1, z, width),
+                getpixel(data, i, z + 1, width),
+                getpixel(data, i + 1, z + 1, width)
             ];
             data[index] = (data[index] ^ (pixels[0][0] + pixels[1][0] + pixels[2][0]) * pos) % 255;
             data[index + 1] = (data[index + 1] ^ (pixels[0][1] + pixels[1][1] + pixels[2][1]) * pos) % 255;
@@ -375,4 +393,231 @@ function outwardSquare(data, width, height, pos) {
     }
     offset = offset.map(v => v + 12);
     offset.forEach((v, i) => { if (v > 200) offset[i] = 0; });
+}
+
+function pixelSort(data, width, height, pos) {
+    let v = [];
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let index = (z * width + i) * 4;
+            let vv = pos*(data[index] << 16) | pos*(data[index + 1] << 8) | pos*data[index + 2];
+            v.push(vv);
+        }
+        if (v.length > 0) {
+            v.sort((a, b) => a - b);
+            for (let i = 0; i < width; ++i) {
+                let index = (z * width + i) * 4;
+                let value = v[i];
+                data[index] = value & 0xFF;
+                data[index + 1] = (value >> 8) & 0xFF;
+                data[index + 2] = (value >> 16) & 0xFF;
+            }
+            v = [];
+        }
+    }
+}
+
+function glitchSort(data, width, height, pos) {
+    let v = [];
+
+    for (let z = 0; z < height; ++z) {
+        for (let i = 0; i < width; ++i) {
+            let index = (z * width + i) * 4;
+            let vv = (data[index] << 16) | (data[index + 1] << 8) | data[index + 2];
+            v.push(vv);
+        }
+        if (v.length > 0) {
+            v.sort((a, b) => a - b);
+            for (let i = 0; i < width; ++i) {
+                let index = (z * width + i) * 4;
+                let value = v[i];
+                data[index] = (data[index] + (pos * (value & 0xFF))) % 255;
+                data[index + 1] = (data[index + 1] + (pos * ((value >> 8) & 0xFF))) % 255;
+                data[index + 2] = (data[index + 2] + (pos * ((value >> 16) & 0xFF))) % 255;
+            }
+            v = [];
+        }
+    }
+}
+
+function strobeEffect(data, width, height, iterations) {
+    let passIndex = 0;
+    let alpha = iterations;
+
+    for (let z = 0; z < width - 2; ++z) {
+        for (let i = 0; i < height - 2; ++i) {
+            const index = (z * width + i) * 4;
+            let colors = [data[index], data[index + 1], data[index + 2]];
+
+            switch (passIndex) {
+                case 0:
+                    colors[0] = (colors[0] * (-alpha)) % 255;
+                    colors[1] = (colors[1] * alpha) % 255;
+                    colors[2] = (colors[2] * alpha) % 255;
+                    break;
+                case 1:
+                    colors[0] = (colors[0] + colors[0] * alpha) % 255;
+                    colors[1] = (colors[1] + colors[1] * (-alpha)) % 255;
+                    colors[2] = (colors[2] + colors[2] * alpha) % 255;
+                    break;
+                case 2:
+                    colors[0] = (colors[0] * alpha) % 255;
+                    colors[1] = (colors[1] * alpha) % 255;
+                    colors[2] = (colors[2] * (-alpha)) % 255;
+                    break;
+                case 3:
+                    const index1 = ((z + 1) * width + i) * 4;
+                    const index2 = ((z + 2) * width + i) * 4;
+                    colors[0] = (colors[0] + data[index1] * alpha) % 255;
+                    colors[1] = (colors[1] + data[index1 + 1] * alpha) % 255;
+                    colors[2] = (colors[2] + data[index2 + 2] * alpha) % 255;
+                    break;
+            }
+
+            [data[index], data[index + 1], data[index + 2]] = colors;
+            swapColors(data, index);
+        }
+    }
+    passIndex = (passIndex + 1) % 4;
+}
+
+function blend3(data, width, height, iterations) {
+    let rValue = [0, 0, 0];
+    let pos = iterations;
+
+    for (let z = 0; z < width; ++z) {
+        for (let i = 0; i < height; ++i) {
+            const index = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                data[index + j] = pos*(data[index + j] + pos*data[index + j] * rValue[j]) % 255;
+            }
+            swapColors(data, index);
+        }
+    }
+    rValue = rValue.map(value => value + ((Math.random() * 10 > 5) ? -0.1 : 0.1));
+}
+
+function negParadox(data, width, height, iterations) {
+    let alpha = iterations;
+
+    for (let z = 0; z < width - 3; ++z) {
+        for (let i = 0; i < height - 3; ++i) {
+            const index = (z * width + i) * 4;
+            const colors = [
+                [data[index], data[index + 1], data[index + 2]],
+                [data[index + 4], data[index + 5], data[index + 6]],
+                [data[index + 8], data[index + 9], data[index + 10]],
+                [data[index + 12], data[index + 13], data[index + 14]]
+            ];
+
+            data[index] = (colors[0][0] * alpha + colors[1][0] * alpha) % 255;
+            data[index + 1] = (colors[1][1] * alpha + colors[3][1] * alpha) % 255;
+            data[index + 2] = (colors[1][2] * alpha + colors[2][2] * alpha) % 255;
+
+            swapColors(data, index);
+        }
+    }
+}
+
+function thoughtMode(data, width, height, iterations) {
+    let alpha = iterations;
+    let mode = 0;
+    let sw = 1, tr = 1;
+
+    for (let z = 2; z < width - 2; ++z) {
+        for (let i = 2; i < height - 4; ++i) {
+            const index = (z * width + i) * 4;
+            if (sw === 1) data[index] = (data[index] + data[index + mode] * alpha) % 255;
+            if (tr === 0) data[index + mode] = (data[index + mode] - data[index + (Math.random() * 2) * 4] * alpha) % 255;
+            data[index + mode] = (data[index + mode] + data[index + mode] * alpha) % 255;
+
+            mode = (mode + 1) % 3;
+            swapColors(data, index);
+        }
+    }
+    sw = !sw;
+    tr = !tr;
+
+}
+
+function blank(data, width, height, iterations) {
+    let alpha = iterations;
+    let color_switch = false;
+    const val = [0, 0, 0];
+
+    for (let z = 0; z < width; ++z) {
+        for (let i = 0; i < height; ++i) {
+            const index = (z * width + i) * 4;
+            for (let j = 0; j < 3; ++j) {
+                val[j] = (alpha * data[index + j]) / (2 - j + 1);
+                data[index + j] += val[2 - j] / (j + 1);
+                if (color_switch) data[index + j] = 255 - data[index + j];
+            }
+            swapColors(data, index);
+        }
+    }
+
+    color_switch = !color_switch;
+    
+}
+
+function tri(data, width, height, iterations) {
+    let alpha = iterations;
+
+    for (let z = 0; z < width - 3; ++z) {
+        for (let i = 0; i < height - 3; ++i) {
+            const index = (z * width + i) * 4;
+            const colors = [
+                data[index + 4],
+                data[index + 8]
+            ];
+
+            data[index] = (data[index] + data[index] * alpha) % 255;
+            data[index + 1] = (data[index + 1] + colors[0] + colors[1] * alpha) % 255;
+            data[index + 2] = (data[index + 2] + colors[0] + colors[1] * alpha) % 255;
+
+            swapColors(data, index);
+        }
+    }
+}
+
+function distort(data, width, height, iterations) {
+    let alpha = iterations;
+
+    for (let z = 0; z < width; ++z) {
+        for (let i = 0; i < height; ++i) {
+            const index = (z * width + i) * 4;
+            data[index] = (i * alpha + data[index]) % 255;
+            data[index + 2] = (z * alpha + data[index + 2]) % 255;
+            data[index + 1] = (alpha * data[index + 1]) % 255;
+
+            data[index + 1] = ((i + z) * alpha + data[index + 1]) % 255;
+            swapColors(data, index);
+        }
+    }
+}
+
+function cDraw(data, width, height, iterations) {
+    let alpha = iterations;
+    let rad = 80.0;
+    let deg = 1.0;
+
+    for (let z = 0; z < width; ++z) {
+        for (let i = 0; i < height; ++i) {
+            const index = (z * width + i) * 4;
+            const cX = Math.floor(rad * Math.cos(deg));
+            const cY = Math.floor(rad * Math.sin(deg));
+
+            data[index] = (data[index] * (cX * alpha)) % 255;
+            data[index + 1] = (data[index + 1] * (cY * alpha)) % 255;
+            data[index + 2] = (data[index + 2] * alpha) % 255;
+
+            deg += 0.1;
+            swapColors(data, index);
+        }
+    }
+
+    rad += 0.1;
+    if (rad > 90) rad = 0;
+    if (alpha > 20) alpha = 0;
 }
