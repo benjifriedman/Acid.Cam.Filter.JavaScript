@@ -39,6 +39,21 @@ document.getElementById('saveImage').addEventListener('click', function() {
     link.click();
 });
 
+// Keyboard shortcuts
+document.addEventListener("keydown", function (event) {
+  switch (event.key) {
+    case "l":
+      document.getElementById("loadImage").click();
+      break;
+    case "s":
+      document.getElementById("saveImage").click();
+      break;
+    case "c":
+      document.getElementById("setImage").click();
+      break;
+  }
+});
+
 const controls = document.querySelectorAll('#iterationSlider, #filterSelect');
 controls.forEach(control => {
     control.addEventListener('input', applyFilter);
